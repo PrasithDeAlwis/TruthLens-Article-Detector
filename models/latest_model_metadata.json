@@ -1,0 +1,11 @@
+{
+  "timestamp": "20251213_143849",
+  "model_type": "Content-Based Logistic Regression",
+  "test_accuracy": 0.9970760233918129,
+  "cv_accuracy": 0.99875,
+  "cv_std": 0.002499999999999991,
+  "train_samples": 796,
+  "test_samples": 342,
+  "features": "TF-IDF + Linguistic Pattern Features",
+  "dataset": "balanced_2000_dataset.csv"
+}

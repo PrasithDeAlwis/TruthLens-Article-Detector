@@ -1,0 +1,10 @@
+# Reports Directory
+
+This directory contains evaluation reports and visualizations.
+
+Generated files include:
+- `confusion_matrix.png` - Visualization of prediction accuracy
+- `roc_curve.png` - ROC curve for binary classification
+- `precision_recall_curve.png` - Precision-recall curve
+- `model_comparison.png` - Comparison of different models
+- `feature_importance.png` - Feature importance plots
