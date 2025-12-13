@@ -1,0 +1,13 @@
+# Models Directory
+
+This directory stores trained machine learning models.
+
+Models are saved as `.pkl` files using joblib and include:
+- The trained classifier
+- The text preprocessor
+- The feature extractor
+- Label mappings
+
+Example model files:
+- `logistic_regression_20231213_120000.pkl`
+- `random_forest_20231213_120500.pkl`

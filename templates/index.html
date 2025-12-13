@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1><i class="fas fa-shield-alt"></i> TruthLens</h1>
+        <p class="subtitle">AI-Powered Fake News Detection System</p>
+        <p class="description">Analyze news articles using machine learning to identify potentially fake or misleading content.</p>
+        
+        {% if not model_loaded %}
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i>
+            <strong>No model loaded!</strong> Please train a model first by running: <code>cd src && python main.py</code>
+        </div>
+        {% else %}
+        <div class="model-info">
+            <i class="fas fa-check-circle"></i> Model loaded: <strong>{{ model_name }}</strong>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="container main-content">
+    <div class="prediction-section">
+        <h2><i class="fas fa-search"></i> Analyze Article</h2>
+        
+        <form id="prediction-form">
+            <div class="form-group">
+                <label for="article-text">
+                    <i class="fas fa-newspaper"></i> Paste Article Text:
+                </label>
+                <textarea 
+                    id="article-text" 
+                    name="article" 
+                    rows="12" 
+                    placeholder="Enter the news article text here... (minimum 20 characters)"
+                    {% if not model_loaded %}disabled{% endif %}
+                ></textarea>
+                <div class="char-count">
+                    <span id="char-counter">0 characters</span>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" {% if not model_loaded %}disabled{% endif %}>
+                <i class="fas fa-brain"></i> Analyze Article
+            </button>
+            <button type="button" class="btn btn-secondary" id="clear-btn">
+                <i class="fas fa-eraser"></i> Clear
+            </button>
+        </form>
+
+        <div id="loading" class="loading" style="display: none;">
+            <i class="fas fa-spinner fa-spin"></i> Analyzing article...
+        </div>
+
+        <div id="result" class="result" style="display: none;">
+            <h3>Analysis Results</h3>
+            
+            <div class="result-main">
+                <div class="prediction-label">
+                    <span id="prediction-text"></span>
+                </div>
+                <div class="confidence-bar">
+                    <div class="confidence-label">Confidence:</div>
+                    <div class="progress-bar">
+                        <div id="confidence-fill" class="progress-fill"></div>
+                    </div>
+                    <div class="confidence-value" id="confidence-value"></div>
+                </div>
+            </div>
+
+            <div class="probabilities">
+                <h4><i class="fas fa-chart-pie"></i> Probability Distribution</h4>
+                <div id="prob-bars"></div>
+            </div>
+
+            <div class="statistics">
+                <h4><i class="fas fa-chart-bar"></i> Text Statistics</h4>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <i class="fas fa-font"></i>
+                        <div class="stat-value" id="text-length"></div>
+                        <div class="stat-label">Characters</div>
+                    </div>
+                    <div class="stat-item">
+                        <i class="fas fa-align-left"></i>
+                        <div class="stat-value" id="word-count"></div>
+                        <div class="stat-label">Words</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="error" class="alert alert-error" style="display: none;"></div>
+    </div>
+
+    <div class="info-section">
+        <div class="info-card">
+            <h3><i class="fas fa-info-circle"></i> How It Works</h3>
+            <ol>
+                <li><strong>Text Preprocessing:</strong> Cleans and normalizes article text</li>
+                <li><strong>Feature Extraction:</strong> Converts text to numerical features using TF-IDF</li>
+                <li><strong>ML Classification:</strong> Applies trained machine learning model</li>
+                <li><strong>Results:</strong> Shows prediction with confidence scores</li>
+            </ol>
+        </div>
+
+        <div class="info-card">
+            <h3><i class="fas fa-robot"></i> ML Models Used</h3>
+            <ul>
+                <li><i class="fas fa-check"></i> Logistic Regression</li>
+                <li><i class="fas fa-check"></i> Random Forest</li>
+                <li><i class="fas fa-check"></i> Support Vector Machine</li>
+                <li><i class="fas fa-check"></i> Naive Bayes</li>
+            </ul>
+        </div>
+
+        <div class="info-card">
+            <h3><i class="fas fa-exclamation-triangle"></i> Important Notes</h3>
+            <ul>
+                <li>This is an AI system - not 100% accurate</li>
+                <li>Always verify from multiple trusted sources</li>
+                <li>Consider context and source credibility</li>
+                <li>Use as a tool, not definitive truth</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="api-section">
+        <h3><i class="fas fa-code"></i> API Usage</h3>
+        <p>Use our REST API to integrate fake news detection into your applications:</p>
+        <pre><code>POST /api/predict
+Content-Type: application/json
+
+{
+  "text": "Your article text here..."
+}
+
+Response:
+{
+  "success": true,
+  "prediction": "real",
+  "confidence": 0.89,
+  "probabilities": {
+    "fake": 0.11,
+    "real": 0.89
+  }
+}</code></pre>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/predict.js') }}"></script>
+{% endblock %}

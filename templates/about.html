@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}About - TruthLens{% endblock %}
+
+{% block content %}
+<div class="container page-content">
+    <h1><i class="fas fa-info-circle"></i> About TruthLens</h1>
+    
+    <div class="about-section">
+        <h2>Project Overview</h2>
+        <p>
+            TruthLens is an advanced article-level fake news classification system that leverages 
+            machine learning and natural language processing to identify potentially fake or 
+            misleading news articles.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2><i class="fas fa-bullseye"></i> Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <i class="fas fa-broom"></i>
+                <h3>Text Preprocessing</h3>
+                <p>Comprehensive cleaning, tokenization, lemmatization, and stopword removal</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-puzzle-piece"></i>
+                <h3>Feature Extraction</h3>
+                <p>TF-IDF vectorization with n-gram support for advanced text analysis</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-brain"></i>
+                <h3>Multiple ML Models</h3>
+                <p>Logistic Regression, Random Forest, SVM, and Naive Bayes classifiers</p>
+            </div>
+            <div class="feature-card">
+                <i class="fas fa-chart-line"></i>
+                <h3>Detailed Evaluation</h3>
+                <p>Comprehensive metrics, confusion matrices, and ROC curves</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2><i class="fas fa-cogs"></i> How It Works</h2>
+        <div class="process-steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>Data Collection</h3>
+                    <p>Training data from verified fake and real news sources</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>Preprocessing</h3>
+                    <p>Clean text, remove noise, normalize, and tokenize</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Feature Engineering</h3>
+                    <p>Convert text to numerical features using TF-IDF</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>Model Training</h3>
+                    <p>Train multiple ML models and select the best performer</p>
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-number">5</div>
+                <div class="step-content">
+                    <h3>Prediction</h3>
+                    <p>Analyze new articles and provide confidence scores</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section">
+        <h2><i class="fas fa-chart-bar"></i> Performance</h2>
+        <p>Our system achieves strong performance on balanced datasets:</p>
+        <ul class="performance-list">
+            <li><strong>Logistic Regression:</strong> 85-90% accuracy (fast, interpretable)</li>
+            <li><strong>Random Forest:</strong> 87-92% accuracy (robust, handles non-linearity)</li>
+            <li><strong>SVM:</strong> 86-91% accuracy (excellent for high-dimensional data)</li>
+            <li><strong>Naive Bayes:</strong> 82-87% accuracy (very fast baseline)</li>
+        </ul>
+        <p class="note">
+            <i class="fas fa-info-circle"></i>
+            Performance varies based on dataset quality, size, and distribution.
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2><i class="fas fa-database"></i> Technology Stack</h2>
+        <div class="tech-grid">
+            <div class="tech-item">
+                <i class="fab fa-python"></i>
+                <span>Python</span>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-brain"></i>
+                <span>scikit-learn</span>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-language"></i>
+                <span>NLTK</span>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>Pandas</span>
+            </div>
+            <div class="tech-item">
+                <i class="fas fa-flask"></i>
+                <span>Flask</span>
+            </div>
+            <div class="tech-item">
+                <i class="fab fa-html5"></i>
+                <span>HTML/CSS/JS</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="about-section disclaimer">
+        <h2><i class="fas fa-exclamation-triangle"></i> Disclaimer</h2>
+        <p>
+            This system is designed for educational and research purposes. While it achieves 
+            good accuracy on test data, no automated system is perfect. Users should:
+        </p>
+        <ul>
+            <li>Use this as one tool among many for evaluating news credibility</li>
+            <li>Always verify information from multiple trusted sources</li>
+            <li>Consider the context, source reputation, and supporting evidence</li>
+            <li>Apply critical thinking when consuming news content</li>
+        </ul>
+        <p>
+            <strong>The predictions made by this system should not be considered definitive truth.</strong>
+        </p>
+    </div>
+
+    <div class="about-section">
+        <h2><i class="fab fa-github"></i> Open Source</h2>
+        <p>
+            TruthLens is open source and available on GitHub. Contributions, feedback, and 
+            suggestions are welcome!
+        </p>
+        <a href="https://github.com/PrasithDeAlwis/TruthLens-Article-Detector" 
+           class="btn btn-primary" target="_blank">
+            <i class="fab fa-github"></i> View on GitHub
+        </a>
+    </div>
+</div>
+{% endblock %}
