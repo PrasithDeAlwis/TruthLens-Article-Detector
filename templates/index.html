@@ -2,26 +2,35 @@
 
 {% block content %}
 <div class="hero">
-    <div class="container">
-        <h1><i class="fas fa-shield-alt"></i> TruthLens</h1>
-        <p class="subtitle">AI-Powered Fake News Detection System</p>
-        <p class="description">Analyze news articles using machine learning to identify potentially fake or misleading content.</p>
-        
-        {% if not model_loaded %}
-        <div class="alert alert-warning">
-            <i class="fas fa-exclamation-triangle"></i>
-            <strong>No model loaded!</strong> Please train a model first by running: <code>cd src && python main.py</code>
+    <div class="hero-overlay"></div>
+    <div class="container position-relative">
+        <div class="hero-content" data-aos="fade-up">
+            <h1 class="hero-title" data-aos="fade-up" data-aos-delay="100">
+                <i class="fas fa-shield-alt"></i> TruthLens
+            </h1>
+            <p class="hero-subtitle" data-aos="fade-up" data-aos-delay="200">
+                AI-Powered Fake News Detection System
+            </p>
+            <p class="hero-description" data-aos="fade-up" data-aos-delay="300">
+                Analyze news articles using machine learning to identify potentially fake or misleading content.
+            </p>
+            
+            {% if not model_loaded %}
+            <div class="alert alert-warning" data-aos="fade-up" data-aos-delay="400">
+                <i class="fas fa-exclamation-triangle"></i>
+                <strong>No model loaded!</strong> Please train a model first by running: <code>cd src && python main.py</code>
+            </div>
+            {% else %}
+            <div class="model-info" data-aos="fade-up" data-aos-delay="400">
+                <i class="fas fa-check-circle"></i> Model loaded: <strong>{{ model_name }}</strong>
+            </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="model-info">
-            <i class="fas fa-check-circle"></i> Model loaded: <strong>{{ model_name }}</strong>
-        </div>
-        {% endif %}
     </div>
 </div>
 
 <div class="container main-content">
-    <div class="prediction-section">
+    <div class="prediction-section" data-aos="fade-right">
         <h2><i class="fas fa-search"></i> Analyze Article</h2>
         
         <form id="prediction-form">
@@ -95,7 +104,7 @@
     </div>
 
     <div class="info-section">
-        <div class="info-card">
+        <div class="info-card" data-aos="fade-left">
             <h3><i class="fas fa-info-circle"></i> How It Works</h3>
             <ol>
                 <li><strong>Text Preprocessing:</strong> Cleans and normalizes article text</li>
@@ -105,7 +114,7 @@
             </ol>
         </div>
 
-        <div class="info-card">
+        <div class="info-card" data-aos="fade-left" data-aos-delay="100">
             <h3><i class="fas fa-robot"></i> ML Models Used</h3>
             <ul>
                 <li><i class="fas fa-check"></i> Logistic Regression</li>
@@ -115,7 +124,7 @@
             </ul>
         </div>
 
-        <div class="info-card">
+        <div class="info-card" data-aos="fade-left" data-aos-delay="200">
             <h3><i class="fas fa-exclamation-triangle"></i> Important Notes</h3>
             <ul>
                 <li>This is an AI system - not 100% accurate</li>

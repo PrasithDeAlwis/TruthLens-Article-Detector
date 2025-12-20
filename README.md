@@ -24,22 +24,24 @@ TruthLens is an article-level fake news classification system that uses advanced
 
 ```
 TruthLens-Article-Detector/
+├── app.py                     # Flask web application (main entry point)
 ├── data/                      # Dataset storage
-│   └── sample_news.csv       # Sample dataset
+│   └── balanced_2000_dataset.csv  # Balanced training dataset
 ├── models/                    # Trained models
-├── src/                       # Source code
-│   ├── preprocess.py         # Text preprocessing
-│   ├── feature_extraction.py # Feature engineering
-│   ├── train.py              # Model training
-│   ├── evaluate.py           # Model evaluation
-│   ├── predict.py            # Prediction interface
-│   ├── create_sample_data.py # Sample data generator
-│   └── main.py               # Main training script
-├── notebooks/                 # Jupyter notebooks
-├── reports/                   # Evaluation reports and plots
+│   ├── content_based_model_*.pkl  # Best performing model (99.7% accuracy)
+│   └── latest_model_metadata.json # Model performance metrics
+├── src/                       # Core source code
+│   ├── predict.py            # Prediction module (supports multiple model formats)
+│   ├── train.py              # Model training module
+│   ├── preprocess.py         # Text preprocessing utilities
+│   ├── feature_extraction.py # TF-IDF and feature engineering
+│   ├── content_features.py   # Advanced linguistic features
+│   ├── evaluate.py           # Model evaluation and metrics
+│   └── main.py               # Main training orchestration
+├── static/                    # Web app static files (CSS, JavaScript)
+├── templates/                 # HTML templates
 ├── requirements.txt           # Python dependencies
-├── .gitignore                # Git ignore file
-└── README.md                 # This file
+└── README.md                 # Documentation
 ```
 
 ## 🚀 Getting Started
@@ -51,12 +53,13 @@ TruthLens-Article-Detector/
 
 ### Installation
 
-1. **Clone the repository** (or you're already here!)
+1. **Clone the repository**
 
-2. **Activate the virtual environment**:
+2. **Create and activate virtual environment** (optional but recommended):
 
 ```powershell
-.\venv\Scripts\Activate
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
 ```
 
 3. **Install dependencies**:
@@ -65,9 +68,23 @@ TruthLens-Article-Detector/
 pip install -r requirements.txt
 ```
 
-4. **Download NLTK data** (will be done automatically on first run):
+4. **Download NLTK data** (automatically handled on first run)
 
-The system will automatically download required NLTK datasets (punkt, stopwords, wordnet) when you first run it.
+## 🌐 Quick Start - Web Application
+
+The easiest way to use TruthLens is through the web interface:
+
+```powershell
+python app.py
+```
+
+Then open your browser to: **http://127.0.0.1:5000**
+
+The app automatically loads the best performing model (99.7% accuracy) and provides:
+- Real-time article analysis
+- Confidence scores
+- Probability distributions
+- User-friendly interface
 
 ## 📊 Usage
 

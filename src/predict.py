@@ -28,31 +28,41 @@ class FakeNewsPredictor:
         # Load the model
         pipeline = joblib.load(model_path)
         
+        # Initialize flags
+        self.is_notebook_model = False
+        self.is_content_model = False
+        self.is_old_format = False
+        
         # Check model type
         if isinstance(pipeline, dict):
-            # Check if it's a content-based model (has 'model' key as pipeline)
-            if hasattr(pipeline.get('model'), 'predict'):
+            # Check if it's an old-format model with preprocessor and feature_extractor
+            if 'preprocessor' in pipeline and 'feature_extractor' in pipeline:
+                # Old format model (from FakeNewsClassifier)
                 self.model = pipeline['model']
-                self.model_name = pipeline.get('model_name', 'Unknown')
-                self.is_content_model = True
-                self.is_notebook_model = False
-            else:
+                self.preprocessor = pipeline['preprocessor']
+                self.feature_extractor = pipeline['feature_extractor']
+                self.label_mapping = pipeline['label_mapping']
+                self.model_name = pipeline.get('model_type', 'Unknown')
+                self.is_old_format = True
+            elif 'vectorizer' in pipeline:
                 # Notebook-trained model (dict with vectorizer and model)
                 self.vectorizer = pipeline['vectorizer']
                 self.model = pipeline['model']
                 self.model_name = pipeline.get('model_name', 'Unknown')
                 self.is_notebook_model = True
-                self.is_content_model = False
+            elif hasattr(pipeline.get('model'), 'predict'):
+                # Content-based model (has 'model' key as pipeline)
+                self.model = pipeline['model']
+                self.model_name = pipeline.get('model_name', 'Unknown')
+                self.is_content_model = True
         else:
-            # Old format compatibility
-            from train import FakeNewsClassifier
-            self.classifier = FakeNewsClassifier()
-            self.classifier.load(model_path)
-            self.is_notebook_model = False
-            self.is_content_model = False
+            # Pipeline object directly (content-based)
+            self.model = pipeline
+            self.model_name = 'Pipeline'
+            self.is_content_model = True
         
         print(f"Model loaded successfully from {model_path}")
-        if self.is_notebook_model or self.is_content_model:
+        if self.is_notebook_model or self.is_content_model or self.is_old_format:
             print(f"Model type: {self.model_name}")
     
     def clean_text(self, text):
@@ -127,17 +137,28 @@ class FakeNewsPredictor:
                 return prediction, proba_dict
             
             return prediction
-        else:
-            # Use old classifier method
-            prediction = self.classifier.predict([text])[0]
+            
+        elif self.is_old_format:
+            # Old format model with preprocessor and feature extractor
+            # Preprocess the text
+            processed_text = self.preprocessor.preprocess(text)
+            
+            # Extract features
+            features = self.feature_extractor.transform([processed_text])
+            
+            # Predict
+            prediction = self.model.predict(features)[0]
             
             if return_proba:
-                proba = self.classifier.predict_proba([text])[0]
-                label_names = {v: k for k, v in self.classifier.label_mapping.items()}
+                proba = self.model.predict_proba(features)[0]
+                # Map back to label names
+                label_names = {v: k for k, v in self.label_mapping.items()}
                 proba_dict = {label_names[i]: float(prob) for i, prob in enumerate(proba)}
-                return prediction, proba_dict
+                return label_names[prediction], proba_dict
             
-            return prediction
+            # Map back to label name
+            label_names = {v: k for k, v in self.label_mapping.items()}
+            return label_names[prediction]
     
     def predict_batch(self, texts, return_proba=False):
         """
@@ -189,22 +210,35 @@ class FakeNewsPredictor:
                 return predictions, proba_dicts
             
             return predictions
-        else:
-            # Use old classifier method
-            predictions = self.classifier.predict(texts)
+            
+        elif self.is_old_format:
+            # Old format model with preprocessor and feature extractor
+            # Preprocess all texts
+            processed_texts = [self.preprocessor.preprocess(text) for text in texts]
+            
+            # Extract features
+            features = self.feature_extractor.transform(processed_texts)
+            
+            # Predict
+            predictions = self.model.predict(features)
             
             if return_proba:
-                probas = self.classifier.predict_proba(texts)
-                label_names = {v: k for k, v in self.classifier.label_mapping.items()}
+                probas = self.model.predict_proba(features)
+                label_names = {v: k for k, v in self.label_mapping.items()}
                 
                 proba_dicts = []
                 for proba in probas:
                     proba_dict = {label_names[i]: float(prob) for i, prob in enumerate(proba)}
                     proba_dicts.append(proba_dict)
                 
+                # Map predictions back to label names
+                predictions = [label_names[pred] for pred in predictions]
+                
                 return predictions, proba_dicts
             
-            return predictions
+            # Map predictions back to label names
+            label_names = {v: k for k, v in self.label_mapping.items()}
+            return [label_names[pred] for pred in predictions]
     
     def predict_from_file(self, filepath, text_column='text', output_path=None):
         """
@@ -235,11 +269,19 @@ class FakeNewsPredictor:
             classes = self.model.classes_
             for label_name in classes:
                 df[f'prob_{label_name}'] = [proba[label_name] for proba in probas]
-        else:
-            # Use old classifier method
-            label_names = {v: k for k, v in self.classifier.label_mapping.items()}
+        elif self.is_old_format:
+            # Get label names from label mapping
+            label_names = {v: k for k, v in self.label_mapping.items()}
             for label_name in label_names.values():
                 df[f'prob_{label_name}'] = [proba[label_name] for proba in probas]
+        else:
+            # Content model or other
+            # Get unique labels from probabilities
+            all_labels = set()
+            for proba in probas:
+                all_labels.update(proba.keys())
+            for label_name in all_labels:
+                df[f'prob_{label_name}'] = [proba.get(label_name, 0.0) for proba in probas]
         
         if output_path:
             df.to_csv(output_path, index=False)

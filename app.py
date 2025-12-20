@@ -1,5 +1,12 @@
 """
 Flask Web Application for TruthLens Fake News Detection
+
+This module provides a web interface for the TruthLens fake news detection system.
+It loads trained machine learning models and provides real-time predictions through
+a user-friendly web interface.
+
+Author: TruthLens Team
+Version: 1.0
 """
 
 from flask import Flask, render_template, request, jsonify
@@ -7,11 +14,12 @@ import os
 import sys
 import glob
 
-# Add src directory to path
+# Add src directory to Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from predict import FakeNewsPredictor
 
+# Initialize Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here-change-in-production'
 
@@ -19,7 +27,16 @@ app.config['SECRET_KEY'] = 'your-secret-key-here-change-in-production'
 predictor = None
 
 def load_model():
-    """Load the latest trained model"""
+    """
+    Load the best available trained model.
+    
+    Priority order:
+    1. Content-based model (best performance - 99.7% accuracy)
+    2. Most recently created model file
+    
+    Returns:
+        str: Name of the loaded model file, or None if no model found
+    """
     global predictor
     
     models_dir = os.path.join(os.path.dirname(__file__), 'models')
@@ -27,7 +44,16 @@ def load_model():
     if not os.path.exists(models_dir):
         return None
     
-    # Find all model files
+    # Try to load the content-based model first (best performance)
+    content_model = os.path.join(models_dir, 'content_based_model_20251213_143849.pkl')
+    if os.path.exists(content_model):
+        try:
+            predictor = FakeNewsPredictor(content_model)
+            return os.path.basename(content_model)
+        except Exception as e:
+            print(f"Error loading content-based model: {e}")
+    
+    # Fallback: Find all model files
     model_files = glob.glob(os.path.join(models_dir, '*.pkl'))
     
     if not model_files:
@@ -48,12 +74,25 @@ model_name = load_model()
 
 @app.route('/')
 def home():
-    """Home page"""
+    """
+    Home page route - displays the main prediction interface.
+    
+    Returns:
+        Rendered HTML template with model status
+    """
     return render_template('index.html', model_loaded=predictor is not None, model_name=model_name)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    """Handle prediction requests"""
+    """
+    Handle prediction requests from the web form.
+    
+    Expects:
+        POST form data with 'article' field containing text to analyze
+        
+    Returns:
+        JSON response with prediction results or error message
+    """
     if predictor is None:
         return jsonify({
             'error': 'No model loaded. Please train a model first.',
@@ -96,7 +135,15 @@ def predict():
 
 @app.route('/api/predict', methods=['POST'])
 def api_predict():
-    """API endpoint for predictions"""
+    """
+    API endpoint for programmatic predictions.
+    
+    Expects:
+        JSON body with 'text' field containing article text
+        
+    Returns:
+        JSON response with prediction results or error message
+    """
     if predictor is None:
         return jsonify({
             'error': 'No model loaded',
