@@ -18,13 +18,15 @@ import glob
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), 'src'))
 
 from predict import FakeNewsPredictor
+from url_extractor import URLTextExtractor
 
 # Initialize Flask application
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your-secret-key-here-change-in-production'
 
-# Global predictor instance
+# Global predictor and URL extractor instances
 predictor = None
+url_extractor = URLTextExtractor(timeout=15, max_retries=3)
 
 def load_model():
     """
@@ -123,6 +125,80 @@ def predict():
             },
             'text_length': analysis['text_length'],
             'word_count': analysis['word_count']
+        }
+        
+        return jsonify(response)
+    
+    except Exception as e:
+        return jsonify({
+            'error': f'Prediction error: {str(e)}',
+            'success': False
+        })
+
+@app.route('/predict-url', methods=['POST'])
+def predict_url():
+    """
+    Handle prediction requests from URL.
+    
+    Expects:
+        POST form data with 'url' field containing article URL
+        
+    Returns:
+        JSON response with prediction results or error message
+    """
+    if predictor is None:
+        return jsonify({
+            'error': 'No model loaded. Please train a model first.',
+            'success': False
+        })
+    
+    try:
+        # Get URL from form
+        article_url = request.form.get('url', '').strip()
+        
+        if not article_url:
+            return jsonify({
+                'error': 'Please enter a URL',
+                'success': False
+            })
+        
+        # Extract text from URL
+        extraction_result = url_extractor.extract_text(article_url)
+        
+        if not extraction_result['success']:
+            return jsonify({
+                'error': extraction_result['error'],
+                'success': False
+            })
+        
+        article_text = extraction_result['text']
+        
+        # Debug logging
+        print("=" * 80)
+        print("URL EXTRACTION DEBUG")
+        print("=" * 80)
+        print(f"URL: {article_url}")
+        print(f"Extracted text length: {len(article_text)} characters")
+        print(f"First 500 chars: {article_text[:500]}")
+        print("=" * 80)
+        
+        # Make prediction
+        analysis = predictor.analyze_article(article_text)
+        
+        # Format response
+        response = {
+            'success': True,
+            'prediction': analysis['prediction'],
+            'confidence': round(analysis['confidence'] * 100, 2),
+            'probabilities': {
+                label: round(prob * 100, 2) 
+                for label, prob in analysis['probabilities'].items()
+            },
+            'text_length': analysis['text_length'],
+            'word_count': analysis['word_count'],
+            'url': article_url,
+            'extracted_words': extraction_result['word_count'],
+            'extracted_text': article_text  # Return full text for debugging
         }
         
         return jsonify(response)
