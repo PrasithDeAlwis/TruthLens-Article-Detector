@@ -33,30 +33,73 @@
     <div class="prediction-section" data-aos="fade-right">
         <h2><i class="fas fa-search"></i> Analyze Article</h2>
         
-        <form id="prediction-form">
-            <div class="form-group">
-                <label for="article-text">
-                    <i class="fas fa-newspaper"></i> Paste Article Text:
-                </label>
-                <textarea 
-                    id="article-text" 
-                    name="article" 
-                    rows="12" 
-                    placeholder="Enter the news article text here... (minimum 20 characters)"
-                    {% if not model_loaded %}disabled{% endif %}
-                ></textarea>
-                <div class="char-count">
-                    <span id="char-counter">0 characters</span>
-                </div>
-            </div>
+        <!-- Input Method Tabs -->
+        <div class="input-tabs">
+            <button class="tab-btn active" data-tab="text-tab">
+                <i class="fas fa-keyboard"></i> Text Input
+            </button>
+            <button class="tab-btn" data-tab="url-tab">
+                <i class="fas fa-link"></i> URL Input
+            </button>
+        </div>
 
-            <button type="submit" class="btn btn-primary" {% if not model_loaded %}disabled{% endif %}>
-                <i class="fas fa-brain"></i> Analyze Article
-            </button>
-            <button type="button" class="btn btn-secondary" id="clear-btn">
-                <i class="fas fa-eraser"></i> Clear
-            </button>
-        </form>
+        <!-- Text Input Tab -->
+        <div id="text-tab" class="tab-content active">
+            <form id="prediction-form">
+                <div class="form-group">
+                    <label for="article-text">
+                        <i class="fas fa-newspaper"></i> Paste Article Text:
+                    </label>
+                    <textarea 
+                        id="article-text" 
+                        name="article" 
+                        rows="12" 
+                        placeholder="Enter the news article text here... (minimum 20 characters)"
+                        {% if not model_loaded %}disabled{% endif %}
+                    ></textarea>
+                    <div class="char-count">
+                        <span id="char-counter">0 characters</span>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" {% if not model_loaded %}disabled{% endif %}>
+                    <i class="fas fa-brain"></i> Analyze Article
+                </button>
+                <button type="button" class="btn btn-secondary" id="clear-btn">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+            </form>
+        </div>
+
+        <!-- URL Input Tab -->
+        <div id="url-tab" class="tab-content">
+            <form id="url-form">
+                <div class="form-group">
+                    <label for="article-url">
+                        <i class="fas fa-globe"></i> Enter Article URL:
+                    </label>
+                    <input 
+                        type="url" 
+                        id="article-url" 
+                        name="url" 
+                        class="url-input"
+                        placeholder="https://example.com/news-article"
+                        {% if not model_loaded %}disabled{% endif %}
+                    />
+                    <small class="input-hint">
+                        <i class="fas fa-info-circle"></i> 
+                        Paste a link to a news article. We'll extract and analyze the content.
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary" {% if not model_loaded %}disabled{% endif %}>
+                    <i class="fas fa-download"></i> Extract & Analyze
+                </button>
+                <button type="button" class="btn btn-secondary" id="clear-url-btn">
+                    <i class="fas fa-eraser"></i> Clear
+                </button>
+            </form>
+        </div>
 
         <div id="loading" class="loading" style="display: none;">
             <i class="fas fa-spinner fa-spin"></i> Analyzing article...
@@ -96,6 +139,17 @@
                         <div class="stat-value" id="word-count"></div>
                         <div class="stat-label">Words</div>
                     </div>
+                </div>
+            </div>
+            
+            <!-- Extracted Text Preview (for URL input) -->
+            <div id="extracted-text-section" class="extracted-text-section" style="display: none;">
+                <h4><i class="fas fa-file-alt"></i> Extracted Text Preview</h4>
+                <div class="extracted-text-box">
+                    <p id="extracted-text-content"></p>
+                    <button type="button" class="btn-view-full" id="toggle-full-text">
+                        Show more <i class="fas fa-chevron-down"></i>
+                    </button>
                 </div>
             </div>
         </div>
