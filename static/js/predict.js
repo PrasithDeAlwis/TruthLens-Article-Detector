@@ -2,12 +2,37 @@
 
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('prediction-form');
+    const urlForm = document.getElementById('url-form');
     const textarea = document.getElementById('article-text');
+    const urlInput = document.getElementById('article-url');
     const charCounter = document.getElementById('char-counter');
     const clearBtn = document.getElementById('clear-btn');
+    const clearUrlBtn = document.getElementById('clear-url-btn');
     const loading = document.getElementById('loading');
     const result = document.getElementById('result');
     const error = document.getElementById('error');
+    
+    // Tab switching
+    const tabBtns = document.querySelectorAll('.tab-btn');
+    const tabContents = document.querySelectorAll('.tab-content');
+    
+    tabBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            
+            // Remove active class from all tabs and contents
+            tabBtns.forEach(b => b.classList.remove('active'));
+            tabContents.forEach(c => c.classList.remove('active'));
+            
+            // Add active class to clicked tab and its content
+            this.classList.add('active');
+            document.getElementById(targetTab).classList.add('active');
+            
+            // Hide results and errors when switching tabs
+            hideResult();
+            hideError();
+        });
+    });
 
     // Character counter
     if (textarea && charCounter) {
@@ -23,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Clear button
+    // Clear button for text input
     if (clearBtn) {
         clearBtn.addEventListener('click', function() {
             textarea.value = '';
@@ -33,8 +58,17 @@ document.addEventListener('DOMContentLoaded', function() {
             hideError();
         });
     }
+    
+    // Clear button for URL input
+    if (clearUrlBtn) {
+        clearUrlBtn.addEventListener('click', function() {
+            urlInput.value = '';
+            hideResult();
+            hideError();
+        });
+    }
 
-    // Form submission
+    // Text form submission
     if (form) {
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
@@ -86,8 +120,64 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // URL form submission
+    if (urlForm) {
+        urlForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const url = urlInput.value.trim();
+            
+            // Validation
+            if (!url) {
+                showError('Please enter a URL');
+                return;
+            }
+            
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                showError('URL must start with http:// or https://');
+                return;
+            }
 
-    function displayResult(data) {
+            // Hide previous results and errors
+            hideResult();
+            hideError();
+            
+            // Show loading
+            loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Extracting and analyzing article...';
+            loading.style.display = 'block';
+
+            try {
+                // Send request
+                const formData = new FormData();
+                formData.append('url', url);
+
+                const response = await fetch('/predict-url', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                // Hide loading
+                loading.style.display = 'none';
+                loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing article...';
+
+                if (data.success) {
+                    displayResult(data, true);
+                } else {
+                    showError(data.error || 'An error occurred during prediction');
+                }
+
+            } catch (err) {
+                loading.style.display = 'none';
+                loading.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Analyzing article...';
+                showError('Network error: ' + err.message);
+            }
+        });
+    }
+
+    function displayResult(data, fromUrl = false) {
         // Update prediction label
         const predictionText = document.getElementById('prediction-text');
         const predictionLabel = predictionText.parentElement;
@@ -126,6 +216,59 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update statistics
         document.getElementById('text-length').textContent = data.text_length.toLocaleString();
         document.getElementById('word-count').textContent = data.word_count.toLocaleString();
+        
+        // Handle extracted text display for URL input
+        const extractedTextSection = document.getElementById('extracted-text-section');
+        const extractedTextContent = document.getElementById('extracted-text-content');
+        const toggleBtn = document.getElementById('toggle-full-text');
+        
+        if (fromUrl && data.extracted_text) {
+            // Show extracted text section
+            extractedTextSection.style.display = 'block';
+            extractedTextContent.textContent = data.extracted_text;
+            extractedTextContent.classList.remove('expanded');
+            
+            // Store full text as data attribute
+            extractedTextContent.dataset.fullText = data.extracted_text;
+            extractedTextContent.dataset.preview = data.extracted_text;
+            
+            // Reset toggle button
+            toggleBtn.innerHTML = 'Show more <i class="fas fa-chevron-down"></i>';
+            toggleBtn.onclick = function() {
+                if (extractedTextContent.classList.contains('expanded')) {
+                    extractedTextContent.classList.remove('expanded');
+                    this.innerHTML = 'Show more <i class="fas fa-chevron-down"></i>';
+                } else {
+                    extractedTextContent.classList.add('expanded');
+                    this.innerHTML = 'Show less <i class="fas fa-chevron-up"></i>';
+                }
+            };
+            
+            // Add URL stat if from URL
+            const statsGrid = document.querySelector('.stats-grid');
+            let urlStatItem = document.getElementById('url-stat-item');
+            if (!urlStatItem) {
+                urlStatItem = document.createElement('div');
+                urlStatItem.id = 'url-stat-item';
+                urlStatItem.className = 'stat-item';
+                statsGrid.appendChild(urlStatItem);
+            }
+            
+            urlStatItem.innerHTML = `
+                <i class="fas fa-link"></i>
+                <div class="stat-value">${data.extracted_words.toLocaleString()}</div>
+                <div class="stat-label">Words Extracted</div>
+            `;
+        } else {
+            // Hide extracted text section for text input
+            extractedTextSection.style.display = 'none';
+            
+            // Remove URL stat if it exists
+            const urlStatItem = document.getElementById('url-stat-item');
+            if (urlStatItem) {
+                urlStatItem.remove();
+            }
+        }
 
         // Show result
         result.style.display = 'block';
@@ -135,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function showError(message) {
-        error.textContent = message;
+        error.innerHTML = '<i class="fas fa-exclamation-triangle"></i> ' + message;
         error.style.display = 'block';
         error.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
